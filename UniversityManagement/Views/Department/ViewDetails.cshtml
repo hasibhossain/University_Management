@@ -1,0 +1,53 @@
+﻿@using UniversityManagement.Models
+@model IEnumerable<UniversityManagement.Models.Department>
+
+
+@{
+    ViewBag.Title = "ViewDetails";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<br />
+<h2 class="alert alert-success text-center">View All Department</h2>
+<hr />
+
+
+
+<table id="departmentInfo" class="table table-bordered table-striped width-75">
+    <thead class="bg-primary">
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (Department department in Model)
+        {
+            <tr>
+                <td class="success">@department.Code</td>
+                <td class="warning">@department.Name</td>
+            </tr>
+        }
+
+    </tbody>
+
+</table>
+
+
+
+@section scripts
+    {
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $("#departmentInfo").DataTable();
+
+        });
+    </script>
+
+}
+

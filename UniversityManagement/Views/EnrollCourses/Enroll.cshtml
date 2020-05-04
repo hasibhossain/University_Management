@@ -1,0 +1,202 @@
+﻿@using Vereyon.Web
+@model UniversityManagement.Models.EnrollCourse
+
+@{
+    ViewBag.Title = "Enroll Course";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<br />
+<br />
+<br />
+
+@using (Html.BeginForm())
+{
+    <div class="form-horizontal">
+        @Html.RenderFlashMessages()
+        <fieldset class="box-75">
+            @*<legend>Save Course</legend>*@
+            <h2 class="text-center alert">Enroll in a Course</h2>
+            <hr />
+            <div class="col-md-12">
+                @*@Html.ValidationSummary(true, "", new { @class = "text-danger" })*@
+
+                @*Student Registration DropdownList*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Student.RegNo, "Student Reg. No", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("Registrations", null, " -- Select Registration -- ", htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.Student.RegNo, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @*Student Name*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Name, "Name", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Name, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                @*Student Email*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Email, "Email", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Email, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                @*Student Department*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Department.Name, "Department", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Department.Name, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+
+                @*Course Dropdown*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CourseId, "Select Course", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        <select class="form-control" id="CourseId">
+                            <option value=""> -- Select Course -- </option>
+                        </select>
+                    </div>
+                    <label id="courseIdErrorMessage" style="color: red;"></label>
+                </div>
+
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.EnrollDate, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.EnrollDate, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.EnrollDate, "", new { @class = "text-danger" })
+                        <label id="dateErrorMessage" style="color: red"></label>
+                        
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-8 col-md-offset-4">
+                        <input type="submit" value="Enroll" id="enrollButton" class="btn btn-success btn-block" />
+                        <br />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <label id="enrollSucessMessage" style="color: green"></label>
+                        <label id="enrollErrorMessage" style="color: red"></label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+
+    </div>
+}
+
+
+@section Scripts {
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $("#Registrations").change(function () {
+            var studentId = $("#Registrations").val();
+            var parameter = { studentId: studentId };
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetStudentbyId", "EnrollCourses")',
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(parameter),
+                    success: function (data) {
+                        $("#Student_Name").val(data.Name);
+                        $("#Student_Email").val(data.Email);
+                        $("#Student_Department_Name").val(data.Department.Name);
+
+                        var deptId = data.Department.DepartmentId;
+
+                        $("#CourseId").empty();
+                         var parameter = { deptId: deptId };
+                        $("#CourseId").append('<option value=0>-- Select Course --</option>');
+                         $.ajax({
+                             type: "POST",
+                             url: '@Url.Action("GetCoursesByDeptId", "EnrollCourses")',
+                             contentType: "application/json; charset=utf-8",
+                             data: JSON.stringify(parameter),
+                             dataType: "json",
+                             success: function (data) {
+                                 $.each(data, function (key, value) {
+                                     $("#CourseId").append('<option value=' + value.CourseId + '>' + value.Name + '</option>');
+                                 });
+                             },
+                         });
+                    }
+                });
+
+                return false;
+
+            });
+
+        $("#EnrollDate").datepicker();
+
+        $("#enrollButton").click(function () {
+
+            $("#enrollSucessMessage").text("");
+            $("#enrollErrorMessage").text("");
+
+            var studentId = $("#Registrations").val();
+            
+            var date = $("#EnrollDate").val();
+            if (date == "")
+            {
+                $("#dateErrorMessage").text("Select Date");
+                return false;
+            }
+
+            var courseId = $("#CourseId").val();
+
+            var jsonData = { studentId: studentId, courseId: courseId };
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("IsAlreadyEnrolled","EnrollCourses")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                dataType: "json",
+                success: function (data) {
+                    if (data == false) {
+                        var jsonData1 = { studentId: studentId, CourseId: courseId, EnrollDate: date };
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Action("EnrollStudentToCourse", "EnrollCourses")',
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify(jsonData1),
+                            dataType: "json",
+                            success: function (data) {
+                                $("#enrollSucessMessage").text("Course Enrolled Successfully  !");
+                                $("#Registrations").prop("selectedIndex", 0);
+                                $("#Student_Name").val("");
+                                $("#Student_Email").val("");
+                                $("#Student_Department_Name").val("");
+                                $("#CourseId").empty();
+                                $("#EnrollDate").val("");
+                            },
+                        });
+                        return false;
+                    }
+                    $("#enrollErrorMessage").text("This Student is already enrolled in this course");
+                    return false;
+                },
+            });
+            return false;
+            //Course Already Enrolled
+        });
+    });
+
+    </script>
+}

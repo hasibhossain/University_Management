@@ -1,0 +1,104 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color: #e6ffff;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.box-75 {
+    margin: auto;
+    width: 75%;
+    padding: 0px 10px;
+    border: none;
+    border-radius: 15px;
+    background-color: #e6ffe6;
+    box-shadow: 2px 5px 15px 3px #888888;
+}
+
+.box-100 {
+    width: 100%;
+    padding: 0px 10px;
+    margin: 10px;
+    border: none;
+    border-radius: 15px;
+    background-color: #e6ffe6;
+    box-shadow: 2px 5px 15px 3px #888888;
+}
+
+.width-75 {
+    margin: auto;
+    width: 75%;
+}
+
+label.error {
+    color: red;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.field-validation-error {
+    color: red;
+    font-size: 10px;
+    font-style: italic;
+}
+
+.menu li {
+    display: inline-block;
+    position: relative;
+    white-space: nowrap
+}
+
+.menu li a {
+    display: block;
+    background-color: #222222;
+    color: #808080;
+    text-transform: capitalize;
+    font-weight: bold;
+    padding: 10px;
+}
+.menu li:hover > a {
+    color: #ffffff;
+}
+    .menu li li:hover > a {
+        background-color: #5cb85c!important;
+        text-decoration: none;
+    }
+.menu li li {
+    display: block
+}
+
+.menu li ul {
+    position: absolute;
+    left: -40px;
+    top: 100%;
+    z-index: 10;
+    display: none
+}
+
+.menu li:hover > ul {
+    display: block
+}
+
+.menu li li ul {
+    left: 0;
+    top: 0
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}

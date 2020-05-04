@@ -1,0 +1,60 @@
+﻿@using Vereyon.Web
+@model UniversityManagement.Models.Department
+
+@{
+    /**/
+
+    ViewBag.Title = "SaveDepartment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<br />
+<br />
+<br />
+
+@using (Html.BeginForm())
+{
+    
+    <div class="form-horizontal">
+
+        @Html.RenderFlashMessages()
+        <fieldset class="box-75">
+            @*<legend>Save Department</legend>*@
+            <h2 class="text-center">Save Department</h2>
+            <hr />
+            <div class="col-12">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Code, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Code, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Name, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Name, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="submit" value="Save" class="btn btn-block btn-success" />
+                        <br />
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+}
+
+
+@section scripts
+{
+
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}

@@ -1,0 +1,245 @@
+﻿@model UniversityManagement.Models.RoomAllocation
+
+@{
+    ViewBag.Title = "Allocate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<br />
+<br />
+
+@using (Html.BeginForm())
+{
+   
+    <div class="form-horizontal">
+
+       
+        <fieldset class="box-75">
+            @*<legend>Allocate Class Rooms</legend>*@
+            <h2 class="text-center">Allocate Class Rooms</h2>
+            <hr />
+            <div class="col-md-12">
+                
+
+                @*Department Dropdown*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Course.Department.DepartmentId, "Department", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("Departments", null, "-- Select Department --", htmlAttributes: new { @class = "form-control" })
+                        <label id="departmentErroMessage" style="color: red; font-style: italic"></label>
+                    </div>
+                    
+                </div>
+
+                @*Course Dropdown*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CourseId, "Course", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        <select class="form-control" id="Courses">
+                            <option value="0">-- Select Course --</option>
+                        </select>
+                        <label id="courseErrorMessage" style="color: red; font-style: italic"></label>
+                    </div>
+                    
+                </div>
+
+                
+                <div class="form-group">
+                    @Html.LabelFor(model => model.RoomId, "Room No", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("Rooms", null, "-- Select Room --", htmlAttributes: new { @class = "form-control" })
+                        <label id="roomErrorMessage" style="color: red; font-style: italic"></label>
+                    </div>
+                    
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.DayId, "Day", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("Days", null, "-- Select Day --", htmlAttributes: new { @class = "form-control" })
+                        <label id="dayErrorMessage" style="color: red; font-style: italic"></label>
+                    </div>
+                    
+                </div>
+
+
+                <div class="form-group">
+                    @*@Html.LabelFor(model => model.StartTime, "From", new { @class = "control-label col-md-2" })*@
+                    <label class="control-label col-md-4">From</label>
+                    <div class="col-md-8">
+
+                        <input type="time" id="startTime" name="startTime" class="form-control" />
+                        <label id="startTimeErrorMessage" style="color: red; font-style: italic"></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @*@Html.LabelFor(model => model.EndTime, "To", new { @class = "control-label col-md-2" })*@
+                    <label class="control-label col-md-4">To</label>
+                    <div class="col-md-8">
+
+                        <input type="time" id="endTime" name="endTime" class="form-control" />
+                        <label id="endTimeErrorMessage" style="color: red; font-style: italic"></label>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="submit" value="Allocate" id="allocateButton" class="btn btn-block btn-success" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <label id="roomAllocateSuccessMessage" style="color: green;"></label>
+                        <label id="roomAllocateErrorMessage" style="color: red;"></label>
+                        <label id="roomAllocateNotPossibleMessage" style="color: red;"></label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+
+    </div>
+}
+
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function() {
+
+            $("#Departments").change(function () {
+
+                $("#roomAllocateNotPossibleMessage").text("");
+                $("#roomAllocateSuccessMessage").text("");
+                $("#roomAllocateErrorMessage").text("");
+                $("#Courses").append('<option value=' + 0 + '>' + "-- Select Course --" + '</option>');
+
+                var departmentId = $("#Departments").val();
+                var parameter = { deptId: departmentId };
+                $("#Courses").empty();
+                $("#Courses").append('<option value=0> -- Select Course -- </option>');
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetCoursesByDeptId", "RoomAllocation")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(parameter),
+                    dataType: "json",
+                    success: function(data) {
+                        $.each(data, function(key, value) {
+                            $("#Courses").append('<option value=' + value.Id + '>' + value.Name + '</option>');
+                        });
+                    }
+                });
+            });
+
+            $("#allocateButton").click(function() {
+                var errorValue = 0;
+                ResetErrorLabel();
+                var departmentId = $("#Departments").val();
+                if (departmentId == 0) {
+                    $("#departmentErroMessage").text("Please Select Department!");
+                    errorValue = 1;
+
+                }
+
+                var courseId = $("#Courses").val();
+                if (courseId == 0) {
+                    $("#courseErrorMessage").text("Please Select Course!");
+                    errorValue = 1;
+                }
+
+                var roomId = $("#Rooms").val();
+                if (roomId == 0) {
+                    $("#roomErrorMessage").text("Select One Room!");
+                    errorValue = 1;
+                }
+
+                var dayId = $("#Days").val();
+                if (dayId == 0) {
+                    $("#dayErrorMessage").text("Select a Day!");
+                    errorValue = 1;
+                }
+
+                var time = $("#startTime").val();
+
+                if (time == "") {
+
+                    $("#startTimeErrorMessage").text("Start time is Required!");
+                    errorValue = 1;
+                }
+
+                var hour = parseInt(time.substr(0, 2));
+                var minute = parseInt(time.substr(3, 5));
+                var startTime = hour * 60 + minute;
+
+
+                time = $("#endTime").val();
+                if (time == "") {
+
+                    $("#endTimeErrorMessage").text("End time is Required!");
+                    errorValue = 1;
+                }
+
+                hour = parseInt(time.substr(0, 2));
+                minute = parseInt(time.substr(3, 5));
+                var endTime = hour * 60 + minute;
+
+
+                if (errorValue == 1) {
+                    return false;
+                }
+
+                if (startTime == endTime) {
+                    $("#roomAllocateNotPossibleMessage").text("Its not Possible to create Zero Minute Duration class");
+                    return false;
+                } else if (startTime < endTime) {
+                    var jsonData = { DepartmentId: departmentId, CourseId: courseId, RoomId: roomId, DayId: dayId, StartTime: startTime, EndTime: endTime };
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("SaveRoomSchedule", "RoomAllocation")',
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(jsonData),
+                        dataType: "json",
+                        success: function(data) {
+                            if (data == true) {
+                                $("#roomAllocateSuccessMessage").text("Class Room Schedule Saved Successfully!");
+                                $("#Departments").prop("selectedIndex", 0);
+                                $("#Courses").prop("selectedIndex", 0);
+                                $("#Rooms").prop("selectedIndex", 0);
+                                $("#Days").prop("selectedIndex", 0);
+                                $("#startTime").val('mm/dd/yyyy');
+                                $("#endTime").val('mm/dd/yyyy');
+                                return false;
+                            } else {
+                                $("#roomAllocateErrorMessage").text("Overlapping Problem, Change Time or Day.");
+                                return false;
+                            }
+                        }
+                    });
+
+                } else {
+                    $("#roomAllocateNotPossibleMessage").text("Invalid Time chosen");
+                }
+
+
+                return false;
+            });
+
+        });
+
+
+        function ResetErrorLabel() {
+            $("#departmentErroMessage").text("");
+            $("#courseErrorMessage").text("");
+            $("roomAllocateSuccessMessage").text("");
+            $("#roomErrorMessage").text("");
+            $("#dayErrorMessage").text("");
+            $("#startTimeErrorMessage").text("");
+            $("#endTimeErrorMessage").text("");
+        }
+
+    </script>
+}
+

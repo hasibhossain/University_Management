@@ -1,0 +1,207 @@
+﻿@using Vereyon.Web
+@model UniversityManagement.Models.EnrollCourse
+
+@{
+    ViewBag.Title = "ViewResult";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<br />
+<br />
+<br />
+<br />
+
+@using (Html.BeginForm())
+{
+    @*@Html.AntiForgeryToken()*@
+
+    <div class="form-horizontal">
+        @Html.RenderFlashMessages()
+        <fieldset class="box-75">
+            @*<legend>Save Course</legend>*@
+            <h2 class="text-center">View Result</h2>
+            <hr />
+            <div class="col-md-12">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                @*Student Registration DropdownList*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Student.RegNo, "Student Reg. No", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("Registrations", null, " -- Select Registration -- ", htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.Student.RegNo, "", new { @class = "text-danger" })
+                        <label id="regErrorMessage" style="color: red"></label>
+                    </div>
+                </div>
+
+                @*Student Name*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Name, "Name", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Name, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                @*Student Email*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Email, "Email", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Email, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                @*Student Department*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Department.Name, "Department", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Department.Name, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-8 col-md-offset-4">
+                        <input value="Make Pdf" class="btn btn-success btn-block" />
+                        <br />
+                    </div>
+                </div>
+            </div>
+
+
+
+        </fieldset>
+
+
+
+    </div>
+    <br />
+    <div id="tableDiv" class="box-75">
+        <div class="form-horizontal">
+
+            <div class="headingSection" style="text-align: center">
+                <br />
+                <h1>University Name</h1>
+
+                <h3>Student Result Sheet</h3>
+                <hr />
+            </div>
+
+            <div class="form-group">
+                @Html.Label("Name :", new { @class = "control-label col-md-4" })
+                <label id="studentName" class="control-label"></label>
+            </div>
+            <div class="form-group">
+                @Html.Label("Registration No :", new { @class = "control-label col-md-4" })
+                <label id="studentRegNo" class="control-label"></label>
+            </div>
+            <div class="form-group">
+                @Html.Label("Email :", new { @class = "control-label col-md-4" })
+                <label id="studentEmail" class="control-label"></label>
+            </div>
+            <div class="form-group">
+                @Html.Label("Department :", new { @class = "control-label col-md-4" })
+                <label id="studentDepartment" class="control-label"></label>
+            </div>
+            <div class="form-group">
+                @Html.Label("Date :", new { @class = "control-label col-md-4" })
+                <label id="date" class="control-label"></label>
+            </div>
+            <br />
+            <div id="showTableDiv">
+            </div>
+            <br />
+        </div>
+    </div>
+}
+
+<br />
+<br />
+
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            
+            $("#tableDiv").hide();
+
+            $("#Registrations").change(function () {
+                var studentId = $("#Registrations").val();
+                var parameter = { studentId: studentId };
+
+                if (studentId == 0) {
+                    $("#tableDiv").hide();
+                } else {
+                    $("#tableDiv").show();
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("GetStudentById", "EnrollCourses")',
+                    contentType: "application/json;charset=utf-8",
+                    data: JSON.stringify(parameter),
+                    success: function (data) {
+                        $.each(data, function (key, value) {
+                            $("#Student_Name").val(data.Name);   // Load Student Name TextBox
+                            $("#Student_Email").val(data.Email);  // Load Student Email TextBox
+                            $("#Student_Department_Name").val(data.Department.Name); // Load Student Department TextBox
+
+                            $("#studentName").text(data.Name);
+                            $("#studentRegNo").text(data.RegNo);
+                            $("#studentEmail").text(data.Email);
+                            $("#studentDepartment").text(data.Department.Code);
+                            var currentDate = new Date();
+                            document.getElementById("date").innerHTML = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
+
+                            var parameter = { studentId: studentId };
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url.Action("GetCoursesByStudentId","EnrollCourses")',
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify(parameter),
+                                dataType: "json",
+                                success: function (data1) {
+                                    var table = $('<table style="width: 100%;" id="resultTable" class="table">');
+                                    
+                                    
+                                    table.append('<th>Course Code</th>');
+                                    table.append('<th>Course Name</th>');
+                                    table.append('<th>Grade</th>');
+                                    table.css('width', '100%');
+                                   
+
+                                    $.each(data1, function (key1, value1) {
+
+                                        var trow = $('<tr></tr>');
+                                        
+                                        var grade = value1.CourseGrade;
+                                        if (grade == null)
+                                            grade = 'Not Graded Yet';
+
+                                        trow.append('<td>' + value1.Course.Code + '</td>');
+                                        trow.append('<td>' + value1.Course.Name + '</td>');
+                                        trow.append('<td>' + grade + '</td>');
+                                        table.append(trow);
+                                    });
+                                    table.append("</table>");
+                                    $("th", table).css('background-color', '#79d279');
+                                    $("tr:odd", table).css('background-color', '#FADFE1');
+                                    $("tr:even", table).css('background-color', '#D2D7A3');
+                                    $("#showTableDiv").html(table);
+                                },
+                            });
+                        });
+                        
+                    }
+                });
+                return false;
+            });
+
+
+
+        });
+
+    </script>
+}

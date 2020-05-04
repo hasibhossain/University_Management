@@ -1,0 +1,116 @@
+﻿@model UniversityManagement.Models.CourseAssign
+
+@{
+    ViewBag.Title = "ViewCourseStatistics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<br />
+<br />
+
+<fieldset>
+    <h2 class="alert alert-success text-center">View Course Statistics</h2>
+    @using (Html.BeginForm())
+    {
+
+        <div class="col-md-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Course.Department.DepartmentId, "Department", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <select id="Departments" class="form-control">
+                        <option value="">Select Department</option>
+                        @foreach (var aDepartment in ViewBag.Departments)
+                        {
+                            <option value="@aDepartment.DepartmentId">@aDepartment.Name</option>
+                        }
+                    </select>
+                    <label id="messageLabel" style="color: red; font-weight: normal; font-size: 20px; font-style:italic;"></label>
+                    <br />
+                    <br />
+                </div>
+            </div>
+        </div>
+        <br />
+        <br />
+
+
+        
+
+        <table class="table table-bordered table-striped courseTableInfo">
+            <thead class="bg-primary">
+                <tr>
+                    <th>Code</th>
+                    <th>Title</th>
+                    <th>Semester</th>
+                    <th>Assign To</th>
+                </tr>
+            </thead>
+            <tbody id="courseTable"></tbody>
+
+        </table>
+
+        <div id="htmlTableDiv">
+        </div>
+    }
+</fieldset>
+
+@section Scripts {
+    
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.20/datatables.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            $("#Departments").change(function () {
+
+                var departmentId = $("#Departments").val();
+                var isCourseHere = 0;
+
+
+                $("#messageLabel").text("");
+                var parameter = { deptId : departmentId };
+
+                $.ajax({
+
+                    type: "POST",
+                    url: '@Url.Action("ShowCourseStatistics", "CourseAssign")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(parameter),
+                    dataType: "json",
+                    success: function (data) {
+                        $.each(data, function (key, value) {
+
+                            var assignedTo = value.AssignTo;
+
+                            isCourseHere = 1;
+
+                            if (assignedTo == null || assignedTo == "")
+                                assignedTo = 'Not Assigned Yet';
+
+                            $("#courseTable").append('<tr>' +
+                                '<td style="background-color: #5cb85c">' + value.Code + '</td>' +
+                                '<td style="background-color: #f0ad4e">' + value.Name + '</td>' +
+                                '<td style="background-color: #5cb85c">' + value.Semester.Name + '</td>' +
+                                '<td style="background-color: #f0ad4e">' + assignedTo + '</td>' +
+                                '</tr>'
+                            );
+
+                        });
+
+
+                        if (isCourseHere == 0) {
+                            $("#messageLabel").text("This Department has no Course.");
+                        }
+                                
+                        
+                    }
+
+                });
+
+                return false;
+
+            });
+
+            $("#courseTableInfo").DataTable();
+        });
+    </script>
+}

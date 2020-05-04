@@ -1,0 +1,192 @@
+﻿@using Vereyon.Web
+@model UniversityManagement.Models.EnrollCourse
+
+@{
+    ViewBag.Title = "SaveResult";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<br />
+<br />
+<br />
+
+@using (Html.BeginForm())
+{
+    <div class="form-horizontal">
+        @Html.RenderFlashMessages()
+        <fieldset class="box-75">
+            @*<legend>Save Course</legend>*@
+            <h2 class="text-center">Save Result</h2>
+            <hr />
+            <div class="col-md-12">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+                @*Student Registration DropdownList*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Student.RegNo, "Student Reg. No", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("Registrations", null, " -- Select Registration -- ", htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.Student.RegNo, "", new { @class = "text-danger" })
+                        <label id="regErrorMessage" style="color: red"></label>
+                    </div>
+                </div>
+
+                @*Student Name*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Name, "Name", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Name, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                @*Student Email*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Email, "Email", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Email, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+                @*Student Department*@
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Student.Department.Name, "Department", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextBoxFor(m => m.Student.Department.Name, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+
+
+                @*Course Dropdown*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CourseId, "Select Course", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        <select class="form-control" id="CourseId">
+                            <option value=""> -- Select Course -- </option>
+                        </select>
+                        <label id="courseErrorMessage" style="color: red"></label>
+                    </div>
+                    
+                </div>
+
+                @*Grade DropdownList*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Student.RegNo, "Select Grade Letter", htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DropDownList("GradeList", null, " -- Select Grade -- ", htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.Student.RegNo, "", new { @class = "text-danger" })
+                        <label id="gradeErrorMessage" style="color: red">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-8 col-md-offset-4">
+                        <input type="submit" value="Save" id="saveButton" class="btn btn-success btn-block" />
+                        <br />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <label id="saveSucessMessage" style="color: green"></label>
+                        <label id="saveErrorMessage" style="color: red"></label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+
+    </div>
+}
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#gradeName").change(function () {
+                $("#gradeErrorMessage").text("");
+                $("#saveSucessMessage").text("");
+                $("#saveErrorMessage").text("");
+            });
+
+            $("#courseId").change(function () {
+                $("#courseErrorMessage").text("");
+                $("#saveSucessMessage").text("");
+                $("#saveErrorMessage").text("");
+            });
+
+            $("#Registrations").change(function () {
+                var studentId = $("#Registrations").val();
+                var parameter = { studentId: studentId };
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetStudentbyId", "EnrollCourses")',
+                        contentType: "application/json;charset=utf-8",
+                        data: JSON.stringify(parameter),
+                        success: function (data) {
+                            $("#Student_Name").val(data.Name);
+                            $("#Student_Email").val(data.Email);
+                            $("#Student_Department_Name").val(data.Department.Name);
+
+                            var deptId = data.Department.DepartmentId;
+
+                            $("#CourseId").empty();
+                             var parameter = { deptId: deptId };
+                            $("#CourseId").append('<option value=0>-- Select Course --</option>');
+                             $.ajax({
+                                 type: "POST",
+                                 url: '@Url.Action("GetCoursesByDeptId", "EnrollCourses")',
+                                 contentType: "application/json; charset=utf-8",
+                                 data: JSON.stringify(parameter),
+                                 dataType: "json",
+                                 success: function (data) {
+                                     $.each(data, function (key, value) {
+                                         $("#CourseId").append('<option value=' + value.CourseId + '>' + value.Name + '</option>');
+                                     });
+                                 },
+                             });
+                        }
+                    });
+                    return false;
+
+
+            });
+
+            
+            $("#saveButton").click(function () {
+
+                var studentId = $("#Registrations").val();
+                var courseId = $("#CourseId").val();
+                var gradeId = $("#GradeList").val();
+                
+                var jsonData = { studentId: studentId, courseId: courseId, courseGradeId: gradeId };
+
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url.Action("SaveStudentResult", "EnrollCourses")',
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify(jsonData),
+                                dataType: "json",
+                                success: function (data) {
+                                    $("#saveSucessMessage").text("Result Saved Successfully!");
+                                    $("#Registrations").prop("selectedIndex", 0);
+                                    $("#GradeList").prop("selectedIndex", 0);
+                                    $("#CourseId").prop("selectedIndex", 0);
+                                    $("#Student_Name").val("");
+                                    $("#Student_Email").val("");
+                                    $("#Student_Department_Name").val("");
+                                    $("#courseId").empty();
+                                    $("#gradeName").prop("selectedIndex", 0);
+                                },
+
+                            });
+                            return false;
+                });
+
+        });
+
+    </script>
+}
